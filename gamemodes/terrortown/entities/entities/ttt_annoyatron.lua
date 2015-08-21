@@ -16,7 +16,10 @@ ENT.CanHavePrints = false
 ENT.SoundLimit = 5
 ENT.SoundDelay = 0.5
 
+local songlist = {
+};
 
+local Music
 
 function ENT:Initialize()
    self:SetModel(self.Model)
@@ -24,36 +27,61 @@ function ENT:Initialize()
    self:SetMoveType(MOVETYPE_VPHYSICS)
    self:SetSolid(SOLID_VPHYSICS)
    self:SetCollisionGroup(COLLISION_GROUP_NONE)
+   self:SetupSongTable()
+   song = songlist[math.random(1, #songlist)]
    if SERVER then
-      self:SetMaxHealth(40)
+	self:SetMaxHealth(40)
    end
    self:SetHealth(40)
-   -- Check to make sure the song list exists
-	CheckSongTxt()
-	-- Populate our song table
-	FillSongTable()
+	
    if SERVER then
       self:SetUseType(SIMPLE_USE)
    end
-   if SERVER then
-	self:StartSong()
+   if CLIENT then
+	self:StartSong(song)
    end
    self.fingerprints = {}
   
 end
 
-function CheckSongTxt()
-	-- Setup Default contents
-	local contents = [[
-music/hl1_song25_remix3.mp3]]
-	--Check if the ttt directory exists
-	if file.IsDir("tt", "DATA") != true then
-		file.CreateDir("ttt")
-	end
-	--Check if the file exists
-	if file.Read("ttt/annoyatrongsongs.txt") == nil then
-		file.Write("ttt/annoyatrongsongs.txt", contents)
-	end
+function ENT:SetupSongTable()
+	table.insert(songlist, "http://66.150.214.164/music/beachboysshred.mp3")
+	table.insert(songlist, "http://66.150.214.164/music/bobsaget.mp3")
+	table.insert(songlist, "http://66.150.214.164/music/canyoufeelthesunshine.mp3")
+	table.insert(songlist, "http://66.150.214.164/music/damnfiddle.mp3")
+	table.insert(songlist, "http://66.150.214.164/music/fortyyearsofgaming.mp3")
+	table.insert(songlist, "http://66.150.214.164/music/hello.mp3")
+	table.insert(songlist, "http://66.150.214.164/music/heyyaaaaheyyaaaah.mp3")
+	table.insert(songlist, "http://66.150.214.164/music/hiimdaisy.mp3")
+	table.insert(songlist, "http://66.150.214.164/music/letsgoaway.mp3")
+	table.insert(songlist, "http://66.150.214.164/music/liketoygorrillas.mp3")
+	table.insert(songlist, "http://66.150.214.164/music/livinginthecity.mp3")
+	table.insert(songlist, "http://66.150.214.164/music/lolrap.mp3")
+	table.insert(songlist, "http://66.150.214.164/music/lookatdis.mp3")
+	table.insert(songlist, "http://66.150.214.164/music/okayokayokay.mp3")
+	table.insert(songlist, "http://66.150.214.164/music/paydaytwonightclub.mp3")
+	table.insert(songlist, "http://66.150.214.164/music/hotpiss.mp3")
+	table.insert(songlist, "http://66.150.214.164/music/pikminpark.mp3")
+	table.insert(songlist, "http://66.150.214.164/music/rollingstart.mp3")
+	table.insert(songlist, "http://66.150.214.164/music/sanicweedhog.mp3")
+	table.insert(songlist, "http://66.150.214.164/music/sickashellsonicmashup.mp3")
+	table.insert(songlist, "http://66.150.214.164/music/slapchop.mp3")
+	table.insert(songlist, "http://66.150.214.164/music/sonicboomrap.mp3")
+	table.insert(songlist, "http://66.150.214.164/music/sonicunderground.mp3")
+	table.insert(songlist, "http://66.150.214.164/music/sonicrap.mp3")
+	table.insert(songlist, "http://66.150.214.164/music/supersonicracing.mp3")
+	table.insert(songlist, "http://66.150.214.164/music/tinytim.mp3")
+	table.insert(songlist, "http://66.150.214.164/music/tttrap.mp3")
+	table.insert(songlist, "http://66.150.214.164/music/whodoyouvoodoo.mp3")
+	table.insert(songlist, "http://66.150.214.164/music/waittillyouseemydick.mp3")
+	table.insert(songlist, "http://66.150.214.164/music/dontevensmokecrack.mp3")
+	table.insert(songlist, "http://66.150.214.164/music/mortalkombat/goro.mp3")
+	table.insert(songlist, "http://66.150.214.164/music/mortalkombat/johnnycage.mp3")
+	table.insert(songlist, "http://66.150.214.164/music/mortalkombat/liukang.mp3")
+	table.insert(songlist, "http://66.150.214.164/music/mortalkombat/rayden.mp3")
+	table.insert(songlist, "http://66.150.214.164/music/mortalkombat/scorpion.mp3")
+	table.insert(songlist, "http://66.150.214.164/music/mortalkombat/sonya.mp3")
+	table.insert(songlist, "http://66.150.214.164/music/mortalkombat/subzero.mp3")
 end
 
 function ENT:UseOverride(activator)
@@ -89,38 +117,24 @@ function ENT:OnTakeDamage(dmginfo)
 end
 
 function ENT:OnRemove()
-self:StopSong(true)
+self:StopSong()
 end
 
-local songlist = {
-};
 
-function FillSongTable()
-	local songFile = file.Read("ttt/annoyatrongsongs.txt")
-	local songTableTemp = string.Explode("\n", songFile)
-	for k, v in pairs(songTableTemp) do
-		table.insert(songlist, k, Sound(v))
+
+function ENT:StartSong(dasong)
+MsgAll(dasong)
+if CLIENT then
+	sound.PlayURL ( dasong, "play", function( station )
+		Music = station
+	end )
+end
+end
+
+function ENT:StopSong()
+	if CLIENT then
+		if Music:IsValid() then
+			Music:Stop()
+		end
 	end
-end
-
-function ENT:StartSong()
-   if not self.Song then
-	self.Song = CreateSound(self, table.Random(songlist))
-	self.Song:SetSoundLevel(0)
-   end
-
-   if not self.Song:IsPlaying() then
-      self.Song:PlayEx(1, 100)
-	  self.Song:SetSoundLevel(0)
-   end
-end
-
-function ENT:StopSong(force)
-   if self.Song and self.Song:IsPlaying() then
-      self.Song:FadeOut(0.5)
-   end
-
-   if self.Song and force then
-      self.Song:Stop()
-   end
 end

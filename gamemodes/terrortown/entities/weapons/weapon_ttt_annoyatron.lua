@@ -16,7 +16,7 @@ if CLIENT then
       desc = "It plays really loud annoying music until broken"
    };
 
-SWEP.Icon = "vgui/ttt/icon_annoyatron"
+SWEP.Icon = "vgui/ttt/icon_radio"
 end
 
 SWEP.Base = "weapon_tttbase"
@@ -112,7 +112,7 @@ function SWEP:RadioStick()
       local tr = util.TraceLine({start=spos, endpos=epos, filter=ignore, mask=MASK_SOLID})
 
       if tr.HitWorld then
-         local radio = ents.Create("ttt_radio")
+         local radio = ents.Create("ttt_annoyatron")
          if IsValid(radio) then
             radio:PointAtEntity(ply)
 
